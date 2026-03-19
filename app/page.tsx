@@ -23,13 +23,13 @@ export default function AsciiCampfire() {
 
   const createParticle = useCallback((baseX: number, baseY: number): Particle => {
     return {
-      x: baseX + (Math.random() - 0.5) * 30,
+      x: baseX + (Math.random() - 0.5) * 60,
       y: baseY,
-      vx: (Math.random() - 0.5) * 2,
-      vy: -Math.random() * 3 - 2,
+      vx: (Math.random() - 0.5) * 1,
+      vy: -Math.random() * 1.5 - 0.8,
       life: 1,
-      maxLife: Math.random() * 60 + 40,
-      size: Math.random() * 4 + 2,
+      maxLife: Math.random() * 120 + 80,
+      size: Math.random() * 5 + 3,
     }
   }, [])
 
@@ -41,8 +41,8 @@ export default function AsciiCampfire() {
     const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
-    const width = 200
-    const height = 250
+    const width = 360
+    const height = 280
     canvas.width = width
     canvas.height = height
 
@@ -51,7 +51,7 @@ export default function AsciiCampfire() {
     const rows = Math.floor(height / cellSize)
 
     const animate = () => {
-      timeRef.current += 0.05
+      timeRef.current += 0.018
       const time = timeRef.current
 
       // Clear canvas
@@ -64,60 +64,59 @@ export default function AsciiCampfire() {
       // Draw logs with 3D perspective
       const logColors = ["#4a3728", "#5c4333", "#3d2b1f", "#6b4423"]
       const logs = [
-        { x: centerX - 35, y: baseY + 5, w: 70, h: 12, angle: 0.15 },
-        { x: centerX - 30, y: baseY + 15, w: 65, h: 10, angle: -0.1 },
-        { x: centerX - 25, y: baseY, w: 55, h: 10, angle: 0.2 },
+        { x: centerX - 70, y: baseY + 5, w: 140, h: 14, angle: 0.12 },
+        { x: centerX - 60, y: baseY + 18, w: 125, h: 12, angle: -0.08 },
+        { x: centerX - 50, y: baseY - 2, w: 105, h: 12, angle: 0.15 },
       ]
 
       logs.forEach((log, i) => {
         ctx.save()
         ctx.translate(log.x + log.w / 2, log.y + log.h / 2)
-        ctx.rotate(log.angle + Math.sin(time * 0.5 + i) * 0.02)
+        ctx.rotate(log.angle + Math.sin(time * 0.3 + i) * 0.01)
         ctx.fillStyle = logColors[i % logColors.length]
         ctx.fillRect(-log.w / 2, -log.h / 2, log.w, log.h)
         // Pixel detail on logs
         ctx.fillStyle = "#2d1f14"
-        for (let j = 0; j < 3; j++) {
-          ctx.fillRect(-log.w / 2 + 10 + j * 15, -log.h / 2 + 2, 4, 4)
+        for (let j = 0; j < 6; j++) {
+          ctx.fillRect(-log.w / 2 + 12 + j * 20, -log.h / 2 + 3, 5, 5)
         }
         ctx.restore()
       })
 
       // Create flame layers with 3D depth
-      const flameCount = 7
+      const flameCount = 9
       for (let layer = 0; layer < flameCount; layer++) {
-        const layerOffset = layer * 0.3
-        const depthScale = 1 - layer * 0.08
-        const flameHeight = (100 + Math.sin(time * 3 + layer) * 15) * depthScale
-        const flameWidth = (40 + Math.sin(time * 2.5 + layer * 0.5) * 8) * depthScale
+        const depthScale = 1 - layer * 0.06
+        const flameHeight = (110 + Math.sin(time * 1.2 + layer) * 12) * depthScale
+        const flameWidth = (80 + Math.sin(time * 0.9 + layer * 0.5) * 15) * depthScale
 
         // Flame color gradient based on layer (inner = brighter)
         let color: string
         if (layer < 2) {
           color = `rgba(255, 255, 230, ${0.9 - layer * 0.1})`
-        } else if (layer < 4) {
-          color = `rgba(255, ${200 - layer * 20}, 0, ${0.85 - layer * 0.05})`
+        } else if (layer < 5) {
+          color = `rgba(255, ${210 - layer * 18}, 0, ${0.85 - layer * 0.04})`
         } else {
-          color = `rgba(255, ${100 - layer * 10}, 0, ${0.7 - layer * 0.05})`
+          color = `rgba(255, ${120 - layer * 8}, 0, ${0.7 - layer * 0.04})`
         }
 
-        const offsetX = Math.sin(time * 4 + layer * 2) * (3 + layer * 2)
-        const offsetY = Math.cos(time * 3 + layer) * 2
+        const offsetX = Math.sin(time * 1.5 + layer * 1.8) * (4 + layer * 3)
+        const offsetY = Math.cos(time * 1.2 + layer) * 3
 
         // Draw pixelated flame shape
         ctx.fillStyle = color
-        const flameX = centerX + offsetX - flameWidth / 2 + (layer - 3) * 5
+        const flameX = centerX + offsetX - flameWidth / 2 + (layer - 4) * 8
         const flameY = baseY - 10 + offsetY
 
         // Create jagged flame top
         ctx.beginPath()
         ctx.moveTo(flameX, flameY)
 
-        const segments = 8
+        const segments = 12
         for (let i = 0; i <= segments; i++) {
           const t = i / segments
           const x = flameX + t * flameWidth
-          const heightVar = Math.sin(time * 5 + i + layer) * 15 + Math.sin(time * 3 + i * 2) * 10
+          const heightVar = Math.sin(time * 1.8 + i + layer) * 12 + Math.sin(time * 1.1 + i * 2) * 8
           const y = flameY - flameHeight * Math.sin(t * Math.PI) - heightVar
 
           // Pixelate the coordinates
@@ -132,23 +131,23 @@ export default function AsciiCampfire() {
       }
 
       // Add glowing core
-      const gradient = ctx.createRadialGradient(centerX, baseY - 30, 5, centerX, baseY - 30, 35)
-      gradient.addColorStop(0, "rgba(255, 255, 255, 0.9)")
-      gradient.addColorStop(0.3, "rgba(255, 255, 150, 0.7)")
-      gradient.addColorStop(0.6, "rgba(255, 200, 50, 0.4)")
+      const gradient = ctx.createRadialGradient(centerX, baseY - 35, 8, centerX, baseY - 35, 60)
+      gradient.addColorStop(0, "rgba(255, 255, 255, 0.85)")
+      gradient.addColorStop(0.25, "rgba(255, 255, 150, 0.65)")
+      gradient.addColorStop(0.5, "rgba(255, 200, 50, 0.35)")
       gradient.addColorStop(1, "rgba(255, 100, 0, 0)")
       ctx.fillStyle = gradient
-      ctx.fillRect(centerX - 40, baseY - 70, 80, 60)
+      ctx.fillRect(centerX - 70, baseY - 80, 140, 70)
 
       // Manage particles (sparks/embers)
-      if (Math.random() < 0.3) {
-        particlesRef.current.push(createParticle(centerX, baseY - 50))
+      if (Math.random() < 0.15) {
+        particlesRef.current.push(createParticle(centerX, baseY - 55))
       }
 
       particlesRef.current = particlesRef.current.filter((p) => {
-        p.x += p.vx + Math.sin(time * 3 + p.y * 0.1) * 0.5
+        p.x += p.vx + Math.sin(time * 1.2 + p.y * 0.08) * 0.3
         p.y += p.vy
-        p.vy += 0.02 // slight gravity resistance
+        p.vy += 0.008 // slight gravity resistance
         p.life -= 1 / p.maxLife
 
         if (p.life > 0) {
@@ -247,11 +246,11 @@ export default function AsciiCampfire() {
         {/* ASCII output */}
         <pre
           ref={asciiRef}
-          className="font-mono text-[8px] leading-[8px] tracking-[0px] select-none"
+          className="font-mono text-[10px] leading-[10px] tracking-[1px] select-none"
           style={{
             fontFamily: "monospace",
             whiteSpace: "pre",
-            textShadow: "0 0 10px rgba(255, 100, 0, 0.3)",
+            textShadow: "0 0 15px rgba(255, 120, 40, 0.4)",
           }}
         />
 
