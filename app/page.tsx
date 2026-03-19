@@ -83,52 +83,104 @@ export default function AsciiCampfire() {
         ctx.restore()
       })
 
-      // Create flame layers with 3D depth
-      const flameCount = 9
-      for (let layer = 0; layer < flameCount; layer++) {
-        const depthScale = 1 - layer * 0.06
-        const flameHeight = (110 + Math.sin(time * 1.2 + layer) * 12) * depthScale
-        const flameWidth = (80 + Math.sin(time * 0.9 + layer * 0.5) * 15) * depthScale
+      // Draw stone ring around fire
+      const stoneColors = ["#6b7280", "#4b5563", "#374151", "#52525b", "#71717a"]
+      const stoneCount = 12
+      const ringRadius = 75
+      for (let i = 0; i < stoneCount; i++) {
+        const angle = (i / stoneCount) * Math.PI * 2 - Math.PI / 2
+        const stoneX = centerX + Math.cos(angle) * ringRadius
+        const stoneY = baseY + 15 + Math.sin(angle) * 20 // ellipse for perspective
+        const stoneW = 18 + Math.sin(i * 2.5) * 4
+        const stoneH = 14 + Math.cos(i * 1.8) * 3
 
-        // Flame color gradient based on layer (inner = brighter)
-        let color: string
-        if (layer < 2) {
-          color = `rgba(255, 255, 230, ${0.9 - layer * 0.1})`
-        } else if (layer < 5) {
-          color = `rgba(255, ${210 - layer * 18}, 0, ${0.85 - layer * 0.04})`
-        } else {
-          color = `rgba(255, ${120 - layer * 8}, 0, ${0.7 - layer * 0.04})`
-        }
-
-        const offsetX = Math.sin(time * 1.5 + layer * 1.8) * (4 + layer * 3)
-        const offsetY = Math.cos(time * 1.2 + layer) * 3
-
-        // Draw pixelated flame shape
-        ctx.fillStyle = color
-        const flameX = centerX + offsetX - flameWidth / 2 + (layer - 4) * 8
-        const flameY = baseY - 10 + offsetY
-
-        // Create jagged flame top
+        // Stone body
+        ctx.fillStyle = stoneColors[i % stoneColors.length]
         ctx.beginPath()
-        ctx.moveTo(flameX, flameY)
+        ctx.ellipse(stoneX, stoneY, stoneW / 2, stoneH / 2, 0, 0, Math.PI * 2)
+        ctx.fill()
 
-        const segments = 12
-        for (let i = 0; i <= segments; i++) {
-          const t = i / segments
-          const x = flameX + t * flameWidth
-          const heightVar = Math.sin(time * 1.8 + i + layer) * 12 + Math.sin(time * 1.1 + i * 2) * 8
-          const y = flameY - flameHeight * Math.sin(t * Math.PI) - heightVar
+        // Stone highlight
+        ctx.fillStyle = "#9ca3af"
+        ctx.beginPath()
+        ctx.ellipse(stoneX - 3, stoneY - 3, stoneW / 5, stoneH / 5, 0, 0, Math.PI * 2)
+        ctx.fill()
 
-          // Pixelate the coordinates
-          const px = Math.round(x / 4) * 4
-          const py = Math.round(y / 4) * 4
-          ctx.lineTo(px, py)
-        }
-
-        ctx.lineTo(flameX + flameWidth, flameY)
-        ctx.closePath()
+        // Stone shadow
+        ctx.fillStyle = "#1f2937"
+        ctx.beginPath()
+        ctx.ellipse(stoneX + 2, stoneY + 3, stoneW / 4, stoneH / 6, 0, 0, Math.PI * 2)
         ctx.fill()
       }
+
+      // Draw distinct flame tongues
+      const flames = [
+        { offsetX: 0, height: 130, width: 35, speed: 1.0 },      // center main
+        { offsetX: -25, height: 100, width: 28, speed: 1.2 },    // left
+        { offsetX: 25, height: 95, width: 26, speed: 0.9 },      // right
+        { offsetX: -12, height: 115, width: 30, speed: 1.1 },    // left-center
+        { offsetX: 15, height: 110, width: 28, speed: 1.3 },     // right-center
+        { offsetX: -35, height: 70, width: 22, speed: 0.8 },     // far left
+        { offsetX: 38, height: 65, width: 20, speed: 1.0 },      // far right
+      ]
+
+      flames.forEach((flame, idx) => {
+        const flameTime = time * flame.speed
+        const swayX = Math.sin(flameTime * 1.5 + idx) * 6
+        const flickerH = Math.sin(flameTime * 2 + idx * 0.7) * 15
+
+        const fx = centerX + flame.offsetX + swayX
+        const fy = baseY - 5
+        const fh = flame.height + flickerH
+        const fw = flame.width + Math.sin(flameTime + idx) * 4
+
+        // Draw 3 layers per flame tongue (outer red, mid orange, inner yellow/white)
+        const layers = [
+          { scale: 1.0, color: `rgba(200, 50, 20, 0.9)` },
+          { scale: 0.7, color: `rgba(255, 120, 0, 0.95)` },
+          { scale: 0.45, color: `rgba(255, 200, 50, 0.95)` },
+          { scale: 0.25, color: `rgba(255, 255, 200, 0.9)` },
+        ]
+
+        layers.forEach((layer) => {
+          const lw = fw * layer.scale
+          const lh = fh * layer.scale
+
+          ctx.fillStyle = layer.color
+          ctx.beginPath()
+          ctx.moveTo(fx - lw / 2, fy)
+
+          // Left edge going up
+          const steps = 6
+          for (let i = 0; i <= steps; i++) {
+            const t = i / steps
+            const edgeWobble = Math.sin(flameTime * 3 + t * 4 + idx) * 3 * layer.scale
+            const x = fx - lw / 2 + edgeWobble + (lw * 0.1 * t)
+            const y = fy - lh * t
+            const px = Math.round(x / 4) * 4
+            const py = Math.round(y / 4) * 4
+            ctx.lineTo(px, py)
+          }
+
+          // Tip with flicker
+          const tipWobble = Math.sin(flameTime * 4 + idx * 2) * 4
+          ctx.lineTo(Math.round((fx + tipWobble) / 4) * 4, Math.round((fy - lh - 8) / 4) * 4)
+
+          // Right edge going down
+          for (let i = steps; i >= 0; i--) {
+            const t = i / steps
+            const edgeWobble = Math.sin(flameTime * 3 + t * 4 + idx + 2) * 3 * layer.scale
+            const x = fx + lw / 2 + edgeWobble - (lw * 0.1 * t)
+            const y = fy - lh * t
+            const px = Math.round(x / 4) * 4
+            const py = Math.round(y / 4) * 4
+            ctx.lineTo(px, py)
+          }
+
+          ctx.closePath()
+          ctx.fill()
+        })
+      })
 
       // Add glowing core
       const gradient = ctx.createRadialGradient(centerX, baseY - 35, 8, centerX, baseY - 35, 60)
@@ -217,7 +269,11 @@ export default function AsciiCampfire() {
               color = "#cc3300"
             }
           } else if (r < 100 && g < 80 && b < 60) {
+            // Brown logs
             color = "#4a3728"
+          } else if (r > 60 && r < 130 && g > 60 && g < 130 && b > 60 && b < 130 && Math.abs(r - g) < 20 && Math.abs(g - b) < 20) {
+            // Gray stones
+            color = "#6b7280"
           }
 
           asciiStr += `<span style="color:${color}">${ASCII_CHARS[charIndex]}</span>`
