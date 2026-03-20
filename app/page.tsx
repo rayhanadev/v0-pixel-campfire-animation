@@ -191,123 +191,104 @@ export default function AsciiCampfire() {
       ctx.fillStyle = gradient
       ctx.fillRect(centerX - 50, baseY - 40, 100, 35)
 
-      // Draw Smiski-like character using pixel blocks (same style as fire)
-      const smiskiX = centerX + 130
-      const smiskiY = baseY + 5
-      const breathe = Math.floor(Math.sin(time * 1.2) * 2)
+      // Draw Smiski character - simple, solid shapes with dark colors for ASCII visibility
+      const smiskiX = centerX + 140
+      const smiskiY = baseY - 5
+      const breathe = Math.sin(time * 1.2) * 2
 
-      // Saturated green colors that will show up in ASCII
-      const smiskiMain = "#4ade80"      // bright green
-      const smiskiLight = "#86efac"     // lighter green  
-      const smiskiShade = "#22c55e"     // darker green
-      const smiskiDark = "#166534"      // darkest for features
-      const smiskiFace = "#15803d"      // face features
+      // Use darker, more saturated colors that create contrast
+      const smiskiBody = "#2d8a4e"       // medium-dark green
+      const smiskiOutline = "#1a5c32"    // dark green outline
+      const smiskiHighlight = "#4ade80"  // highlight
+      const smiskiFace = "#0d3320"       // very dark for eyes/mouth
 
-      // Helper to draw pixel blocks
-      const pixel = (x: number, y: number, size: number, color: string) => {
-        ctx.fillStyle = color
-        ctx.fillRect(Math.round(x / 4) * 4, Math.round(y / 4) * 4, size, size)
-      }
-
-      // Draw body (sitting rounded shape) - built from pixel blocks
-      // Main body mass
-      for (let row = 0; row < 6; row++) {
-        const rowWidth = row < 2 ? 28 : row < 4 ? 32 : 28
-        const xOffset = (32 - rowWidth) / 2
-        for (let col = 0; col < rowWidth; col += 4) {
-          const shade = col < 8 ? smiskiShade : col > rowWidth - 12 ? smiskiLight : smiskiMain
-          pixel(smiskiX - 16 + xOffset + col, smiskiY + row * 4, 4, shade)
-        }
-      }
-
-      // Legs (sitting, spread out)
-      // Left leg toward fire
-      for (let i = 0; i < 4; i++) {
-        pixel(smiskiX - 28 + i * 4, smiskiY + 20, 4, smiskiShade)
-        pixel(smiskiX - 24 + i * 4, smiskiY + 24, 4, smiskiMain)
-      }
-      // Right leg
-      for (let i = 0; i < 3; i++) {
-        pixel(smiskiX + 4 + i * 4, smiskiY + 20, 4, smiskiMain)
-        pixel(smiskiX + 8 + i * 4, smiskiY + 24, 4, smiskiLight)
-      }
-
-      // Head (large, round - the signature Smiski look)
-      const headY = smiskiY - 44 + breathe
-      // Head rows from top to bottom
-      const headRows = [
-        { width: 20, y: 0 },
-        { width: 32, y: 4 },
-        { width: 40, y: 8 },
-        { width: 44, y: 12 },
-        { width: 44, y: 16 },
-        { width: 44, y: 20 },
-        { width: 40, y: 24 },
-        { width: 36, y: 28 },
-        { width: 32, y: 32 },
-      ]
-      headRows.forEach(row => {
-        const xOff = (44 - row.width) / 2
-        for (let col = 0; col < row.width; col += 4) {
-          // Shading: left side darker (facing fire gets warm glow)
-          let shade = smiskiMain
-          if (col < row.width * 0.3) {
-            shade = smiskiShade
-          } else if (col > row.width * 0.7) {
-            shade = smiskiLight
-          }
-          // Top highlight
-          if (row.y < 12 && col > row.width * 0.4 && col < row.width * 0.7) {
-            shade = smiskiLight
-          }
-          pixel(smiskiX - 22 + xOff + col, headY + row.y, 4, shade)
-        }
-      })
-
-      // Eyes - big solid dots looking toward fire (left)
-      // Left eye
-      pixel(smiskiX - 16, headY + 14, 4, smiskiFace)
-      pixel(smiskiX - 12, headY + 14, 4, smiskiFace)
-      pixel(smiskiX - 16, headY + 18, 4, smiskiFace)
-      pixel(smiskiX - 12, headY + 18, 4, smiskiFace)
+      // Draw as solid filled shapes for clean ASCII rendering
       
+      // BODY - simple sitting blob shape
+      ctx.fillStyle = smiskiBody
+      ctx.beginPath()
+      ctx.moveTo(smiskiX - 20, smiskiY + 30)
+      ctx.quadraticCurveTo(smiskiX - 25, smiskiY + 10, smiskiX - 15, smiskiY)
+      ctx.quadraticCurveTo(smiskiX, smiskiY - 5, smiskiX + 15, smiskiY)
+      ctx.quadraticCurveTo(smiskiX + 25, smiskiY + 10, smiskiX + 20, smiskiY + 30)
+      ctx.closePath()
+      ctx.fill()
+
+      // LEFT LEG (toward fire)
+      ctx.fillStyle = smiskiBody
+      ctx.beginPath()
+      ctx.ellipse(smiskiX - 22, smiskiY + 32, 14, 8, -0.3, 0, Math.PI * 2)
+      ctx.fill()
+
+      // RIGHT LEG
+      ctx.beginPath()
+      ctx.ellipse(smiskiX + 12, smiskiY + 34, 12, 7, 0.2, 0, Math.PI * 2)
+      ctx.fill()
+
+      // HEAD - large round, signature Smiski proportions
+      const headCenterX = smiskiX - 3
+      const headCenterY = smiskiY - 35 + breathe
+      const headRadius = 32
+
+      ctx.fillStyle = smiskiBody
+      ctx.beginPath()
+      ctx.arc(headCenterX, headCenterY, headRadius, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Head outline for definition
+      ctx.strokeStyle = smiskiOutline
+      ctx.lineWidth = 3
+      ctx.beginPath()
+      ctx.arc(headCenterX, headCenterY, headRadius, 0, Math.PI * 2)
+      ctx.stroke()
+
+      // LEFT ARM reaching toward fire
+      ctx.fillStyle = smiskiBody
+      ctx.beginPath()
+      ctx.moveTo(smiskiX - 18, smiskiY + 5)
+      ctx.quadraticCurveTo(smiskiX - 40, smiskiY - 5, smiskiX - 55, smiskiY - 15 + breathe * 0.5)
+      ctx.quadraticCurveTo(smiskiX - 58, smiskiY - 10, smiskiX - 55, smiskiY - 5 + breathe * 0.5)
+      ctx.quadraticCurveTo(smiskiX - 38, smiskiY + 5, smiskiX - 18, smiskiY + 12)
+      ctx.closePath()
+      ctx.fill()
+
+      // LEFT HAND (palm facing fire - warm tint)
+      ctx.fillStyle = "#c4956a"  // warm skin tone from fire glow
+      ctx.beginPath()
+      ctx.ellipse(smiskiX - 58, smiskiY - 10 + breathe * 0.5, 7, 9, 0.2, 0, Math.PI * 2)
+      ctx.fill()
+
+      // RIGHT ARM (lower, also toward fire)  
+      ctx.fillStyle = smiskiBody
+      ctx.beginPath()
+      ctx.moveTo(smiskiX - 12, smiskiY + 15)
+      ctx.quadraticCurveTo(smiskiX - 30, smiskiY + 10, smiskiX - 48, smiskiY + 5 + breathe * 0.3)
+      ctx.quadraticCurveTo(smiskiX - 50, smiskiY + 12, smiskiX - 46, smiskiY + 15 + breathe * 0.3)
+      ctx.quadraticCurveTo(smiskiX - 28, smiskiY + 18, smiskiX - 12, smiskiY + 22)
+      ctx.closePath()
+      ctx.fill()
+
+      // RIGHT HAND
+      ctx.fillStyle = "#c4956a"
+      ctx.beginPath()
+      ctx.ellipse(smiskiX - 50, smiskiY + 10 + breathe * 0.3, 6, 8, -0.1, 0, Math.PI * 2)
+      ctx.fill()
+
+      // EYES - two solid dots, looking toward fire (positioned left)
+      ctx.fillStyle = smiskiFace
+      // Left eye
+      ctx.beginPath()
+      ctx.arc(headCenterX - 12, headCenterY - 2 + breathe, 5, 0, Math.PI * 2)
+      ctx.fill()
       // Right eye
-      pixel(smiskiX, headY + 14, 4, smiskiFace)
-      pixel(smiskiX + 4, headY + 14, 4, smiskiFace)
-      pixel(smiskiX, headY + 18, 4, smiskiFace)
-      pixel(smiskiX + 4, headY + 18, 4, smiskiFace)
+      ctx.beginPath()
+      ctx.arc(headCenterX + 6, headCenterY - 2 + breathe, 5, 0, Math.PI * 2)
+      ctx.fill()
 
-      // Mouth - small oval
-      pixel(smiskiX - 8, headY + 26, 4, smiskiFace)
-      pixel(smiskiX - 4, headY + 26, 4, smiskiFace)
-      pixel(smiskiX - 10, headY + 24, 4, smiskiFace)
-      pixel(smiskiX - 2, headY + 24, 4, smiskiFace)
-
-      // Arms reaching toward fire with palms facing warmth
-      // Left arm (upper)
-      const armWave = Math.floor(Math.sin(time * 0.8) * 1)
-      for (let i = 0; i < 5; i++) {
-        pixel(smiskiX - 28 - i * 4, smiskiY - 8 + armWave - i * 2, 4, smiskiShade)
-      }
-      // Left hand/palm
-      pixel(smiskiX - 48, smiskiY - 16 + armWave, 4, smiskiShade)
-      pixel(smiskiX - 48, smiskiY - 12 + armWave, 4, smiskiShade)
-      pixel(smiskiX - 52, smiskiY - 14 + armWave, 4, smiskiShade)
-      pixel(smiskiX - 52, smiskiY - 10 + armWave, 4, smiskiShade)
-      // Warm glow on palm
-      pixel(smiskiX - 52, smiskiY - 14 + armWave, 4, "#f0a060")
-      pixel(smiskiX - 52, smiskiY - 10 + armWave, 4, "#e89050")
-
-      // Right arm (lower)
-      for (let i = 0; i < 4; i++) {
-        pixel(smiskiX - 24 - i * 4, smiskiY + 4 + armWave, 4, smiskiMain)
-      }
-      // Right hand/palm
-      pixel(smiskiX - 44, smiskiY + 2 + armWave, 4, smiskiMain)
-      pixel(smiskiX - 44, smiskiY + 6 + armWave, 4, smiskiMain)
-      pixel(smiskiX - 48, smiskiY + 4 + armWave, 4, smiskiMain)
-      // Warm glow
-      pixel(smiskiX - 48, smiskiY + 4 + armWave, 4, "#f0a060")
+      // MOUTH - small oval, slightly open (Smiski expression)
+      ctx.beginPath()
+      ctx.ellipse(headCenterX - 4, headCenterY + 12 + breathe, 5, 4, 0, 0, Math.PI * 2)
+      ctx.fill()
 
       // Manage particles (sparks/embers)
       if (Math.random() < 0.15) {
@@ -363,20 +344,42 @@ export default function AsciiCampfire() {
           const brightness = (r + g + b) / 3
           const fireIntensity = (r - b) / 255
 
+          // Detect if this is a green (Smiski) pixel
+          const isGreen = g > r * 1.1 && g > b * 1.1 && g > 60
+          const isWarmHand = r > 150 && g > 100 && g < 180 && b < 130
+
           // Determine ASCII character
           let charIndex: number
-          if (brightness > 250 && fireIntensity < 0.1) {
+          if (brightness > 250 && fireIntensity < 0.1 && !isGreen) {
             // Background (white)
             charIndex = 0
+          } else if (isGreen || isWarmHand) {
+            // Smiski - use inverse brightness for solid look
+            const greenIntensity = 1 - (brightness / 255) * 0.7
+            charIndex = Math.floor(Math.min(1, Math.max(0.3, greenIntensity)) * (ASCII_CHARS.length - 1))
           } else {
-            // Fire/object pixels - invert for ASCII (darker = denser char)
+            // Fire/object pixels
             const intensity = 1 - brightness / 255 + fireIntensity * 0.5
             charIndex = Math.floor(Math.min(1, Math.max(0, intensity)) * (ASCII_CHARS.length - 1))
           }
 
-          // Add color based on fire
+          // Add color based on content
           let color = "#1a1a1a"
-          if (fireIntensity > 0.3) {
+          if (isGreen) {
+            // Smiski green shades
+            if (brightness > 160) {
+              color = "#4ade80"
+            } else if (brightness > 100) {
+              color = "#22c55e"
+            } else if (brightness > 50) {
+              color = "#16a34a"
+            } else {
+              color = "#166534" // eyes/mouth
+            }
+          } else if (isWarmHand) {
+            // Warm hands from fire glow
+            color = "#d4a574"
+          } else if (fireIntensity > 0.3) {
             if (brightness > 220) {
               color = "#fff4e0"
             } else if (brightness > 180) {
@@ -392,18 +395,6 @@ export default function AsciiCampfire() {
           } else if (r < 80 && g < 80 && b < 100 && Math.abs(r - g) < 25) {
             // Dark stones
             color = "#374151"
-          } else if (g > r && g > b && g > 150) {
-            // Smiski bright green
-            if (brightness > 180) {
-              color = "#86efac"
-            } else if (brightness > 140) {
-              color = "#4ade80"
-            } else {
-              color = "#22c55e"
-            }
-          } else if (g > r * 1.2 && g > b * 1.2 && g > 80) {
-            // Smiski darker green / face features
-            color = "#166534"
           }
 
           asciiStr += `<span style="color:${color}">${ASCII_CHARS[charIndex]}</span>`
