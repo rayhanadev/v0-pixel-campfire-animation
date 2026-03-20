@@ -41,7 +41,7 @@ export default function AsciiCampfire() {
     const ctx = canvas.getContext("2d", { willReadFrequently: true })
     if (!ctx) return
 
-    const width = 360
+    const width = 440
     const height = 280
     canvas.width = width
     canvas.height = height
@@ -58,7 +58,7 @@ export default function AsciiCampfire() {
       ctx.fillStyle = "#ffffff"
       ctx.fillRect(0, 0, width, height)
 
-      const centerX = width / 2
+      const centerX = width / 2 - 40
       const baseY = height - 50
 
       // Draw logs with 3D perspective
@@ -191,6 +191,123 @@ export default function AsciiCampfire() {
       ctx.fillStyle = gradient
       ctx.fillRect(centerX - 50, baseY - 40, 100, 35)
 
+      // Draw Smiski-like character sitting to the right of fire
+      const smiskiX = centerX + 120
+      const smiskiY = baseY - 10
+      const breathe = Math.sin(time * 1.5) * 1.5
+
+      // Smiski colors - pale mint green, glowing
+      const smiskiBody = "#d4f5d4"
+      const smiskiShadow = "#a8e6a8"
+      const smiskiHighlight = "#e8ffe8"
+      const smiskiDark = "#2d4a2d"
+
+      // Body (sitting blob shape) - facing left toward fire
+      ctx.fillStyle = smiskiBody
+      // Main body oval
+      ctx.beginPath()
+      ctx.ellipse(smiskiX, smiskiY + 5, 22, 18 + breathe, 0, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Body shadow (left side, facing fire)
+      ctx.fillStyle = smiskiShadow
+      ctx.beginPath()
+      ctx.ellipse(smiskiX - 8, smiskiY + 8, 10, 14, 0, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Legs (sitting)
+      ctx.fillStyle = smiskiBody
+      // Left leg (toward fire)
+      ctx.beginPath()
+      ctx.ellipse(smiskiX - 18, smiskiY + 18, 10, 8, -0.3, 0, Math.PI * 2)
+      ctx.fill()
+      // Right leg
+      ctx.beginPath()
+      ctx.ellipse(smiskiX + 8, smiskiY + 20, 10, 7, 0.2, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Head (large round)
+      ctx.fillStyle = smiskiBody
+      ctx.beginPath()
+      ctx.ellipse(smiskiX - 5, smiskiY - 28 + breathe, 24, 26, 0, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Head highlight
+      ctx.fillStyle = smiskiHighlight
+      ctx.beginPath()
+      ctx.ellipse(smiskiX + 5, smiskiY - 38 + breathe, 10, 12, 0, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Left arm reaching toward fire (palm open)
+      ctx.fillStyle = smiskiBody
+      ctx.save()
+      ctx.translate(smiskiX - 20, smiskiY - 5)
+      ctx.rotate(-0.6 + Math.sin(time * 0.8) * 0.05)
+      // Upper arm
+      ctx.beginPath()
+      ctx.ellipse(-12, 0, 8, 5, 0, 0, Math.PI * 2)
+      ctx.fill()
+      // Forearm
+      ctx.beginPath()
+      ctx.ellipse(-24, -3, 7, 5, -0.2, 0, Math.PI * 2)
+      ctx.fill()
+      // Hand/palm facing fire
+      ctx.beginPath()
+      ctx.ellipse(-34, -5, 6, 7, 0, 0, Math.PI * 2)
+      ctx.fill()
+      // Palm highlight (warm glow from fire)
+      ctx.fillStyle = "#ffe8d4"
+      ctx.beginPath()
+      ctx.ellipse(-35, -5, 4, 5, 0, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.restore()
+
+      // Right arm also reaching toward fire
+      ctx.fillStyle = smiskiBody
+      ctx.save()
+      ctx.translate(smiskiX - 12, smiskiY + 5)
+      ctx.rotate(-0.4 + Math.sin(time * 0.8 + 0.5) * 0.05)
+      // Upper arm
+      ctx.beginPath()
+      ctx.ellipse(-10, 0, 7, 5, 0, 0, Math.PI * 2)
+      ctx.fill()
+      // Forearm
+      ctx.beginPath()
+      ctx.ellipse(-20, -2, 6, 4, -0.1, 0, Math.PI * 2)
+      ctx.fill()
+      // Hand/palm
+      ctx.beginPath()
+      ctx.ellipse(-28, -3, 5, 6, 0, 0, Math.PI * 2)
+      ctx.fill()
+      // Palm highlight
+      ctx.fillStyle = "#ffe8d4"
+      ctx.beginPath()
+      ctx.ellipse(-29, -3, 3, 4, 0, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.restore()
+
+      // Face - simple dots for eyes, small oval mouth
+      // Eyes (looking toward fire - to the left)
+      ctx.fillStyle = smiskiDark
+      ctx.beginPath()
+      ctx.ellipse(smiskiX - 14, smiskiY - 30 + breathe, 3, 3, 0, 0, Math.PI * 2)
+      ctx.fill()
+      ctx.beginPath()
+      ctx.ellipse(smiskiX - 2, smiskiY - 28 + breathe, 3, 3, 0, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Small oval mouth
+      ctx.beginPath()
+      ctx.ellipse(smiskiX - 10, smiskiY - 18 + breathe, 4, 3, 0, 0, Math.PI * 2)
+      ctx.fill()
+
+      // Warm glow on smiski from fire
+      const smiskiGlow = ctx.createRadialGradient(smiskiX - 40, smiskiY, 5, smiskiX - 40, smiskiY, 50)
+      smiskiGlow.addColorStop(0, "rgba(255, 180, 100, 0.15)")
+      smiskiGlow.addColorStop(1, "rgba(255, 100, 0, 0)")
+      ctx.fillStyle = smiskiGlow
+      ctx.fillRect(smiskiX - 60, smiskiY - 60, 80, 100)
+
       // Manage particles (sparks/embers)
       if (Math.random() < 0.15) {
         particlesRef.current.push(createParticle(centerX, baseY - 55))
@@ -274,6 +391,12 @@ export default function AsciiCampfire() {
           } else if (r < 80 && g < 80 && b < 100 && Math.abs(r - g) < 25) {
             // Dark stones
             color = "#374151"
+          } else if (g > r && g > b && g > 180 && r > 160 && b > 160) {
+            // Smiski pale green
+            color = "#a8e6a8"
+          } else if (g > r && g > b && g > 100) {
+            // Smiski darker green
+            color = "#6ab36a"
           }
 
           asciiStr += `<span style="color:${color}">${ASCII_CHARS[charIndex]}</span>`
